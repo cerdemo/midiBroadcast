@@ -15,7 +15,6 @@ import rtmidi
 # Global control events
 midi_obj = rtmidi.MidiFile("path_to_midi_file.mid")
 generation_queue = queue.Queue(maxsize=4)
-new_rhythm_event = threading.Event()
 pause_event = threading.Event()
 stop_event = threading.Event()
 change_groove_event = threading.Event() # TODO: Event to change groove for the same tapped rhythm
@@ -50,7 +49,7 @@ def generate_midi_message(event_type, pitch, velocity):
 
 
 
-def broadcasting_loop(midi_obj, generation_queue, stop_event, virtual_port=True, introduce_delay=False, verbose=False):
+def broadcasting_loop(generation_queue, stop_event, virtual_port=True, introduce_delay=False, verbose=False):
     '''This is a MIDI broadcasting loop implementation in terms of synchronization & time.
     It uses the clockblocks clock to synchronize the groove loops.'''
     
@@ -80,7 +79,7 @@ def broadcasting_loop(midi_obj, generation_queue, stop_event, virtual_port=True,
     current_loop_count = 0
     new_groove_queued = False  # This flag is set to True when a new groove enters the queue
     
-    # midi_obj = generation_queue.get()
+    midi_obj = generation_queue.get()
     current_midi_events, current_tempo, ticks_per_beat = midi2events(midi_obj)
     tempo_in_seconds_per_tick = current_tempo / MS_PER_SEC / ticks_per_beat
 
@@ -94,7 +93,7 @@ def broadcasting_loop(midi_obj, generation_queue, stop_event, virtual_port=True,
             total_ticks = sum(event[0] for event in current_midi_events)
 
             # If there's a new groove queued up, don't process it immediately. 
-            # Just mark that a new groove is waiting. #TODO: Check where this conditional should be at?
+            # Just mark that a new groove is waiting. Wait for the current groove to loop for the desired number of times.
             if change_groove_event.is_set() and not generation_queue.empty():
                 new_groove_queued = True
                 change_groove_event.clear()  # Reset the event
@@ -164,7 +163,6 @@ def receive_tapped_rhythms():
     generation_queue.put(midi_obj)
     change_groove_event.set()  # Trigger the broadcasting loop to switch to the new groove
     current_loop_count = 0  # Reset the loop count here
-    new_rhythm_event.set()  # Trigger the generation loop to produce a new DG
     return jsonify({"message": "Processing MIDI file..."})
 
 
