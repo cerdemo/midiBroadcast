@@ -13,7 +13,7 @@ import rtmidi
 ####################
 
 # Global control events
-midi_obj = rtmidi.MidiFile("path_to_midi_file.mid")
+midi_obj = rtmidi.MidiFile("path_to_midi_file.mid") # TODO: Change this to a default MIDI file
 generation_queue = queue.Queue(maxsize=4)
 pause_event = threading.Event()
 stop_event = threading.Event()
