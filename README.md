@@ -1,4 +1,4 @@
-# README for 2groove MIDI Broadcasting Script
+# MIDI Broadcasting Script
 
 ## Overview
 This script serves as a MIDI broadcasting tool for the 2groove web application. It allows for the playback and manipulation of MIDI files, integrating a Flask web server to handle control signals and parameters. 
